@@ -1,0 +1,11 @@
+name = "gomi"
+compatibility_date = "2023-02-13"
+main = "src/index.tsx"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "gomi"
+database_id = "${DATABASE_ID}"
+
+[site]
+bucket = "./assets"
