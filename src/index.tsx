@@ -6,6 +6,7 @@ import { jsxRenderer } from 'hono/jsx-renderer';
 
 import { Layout } from './Layout';
 import { Card, Item } from './Card';
+import { getDate } from './utils';
 
 declare module 'hono' {
   interface ContextRenderer {
@@ -69,11 +70,13 @@ app.post('/search', async (c) => {
   if (typeof q !== 'string' || q === '') return c.text('');
 
   const { results } = await c.env.DB.prepare(
-    `SELECT id, name, type, type2, note FROM gomi WHERE name LIKE ? ORDER BY type ASC;`
+    `SELECT gomi.id, gomi.name, gomi_type.name AS type, gomi.type_id, gomi.type2, gomi.note FROM gomi INNER JOIN gomi_type ON gomi.type_id = gomi_type.id WHERE gomi.name LIKE ? ORDER BY gomi.type_id ASC;`
   )
     .bind(`%${q}%`)
     .all<Item>();
-  const items = results;
+  const today = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+  today.setHours(0, 0, 0, 0);
+  const items = results.map((r) => ({ ...r, nextDate: getDate(r['type_id'], today) }));
 
   return c.html(
     items.length > 0 ? (
